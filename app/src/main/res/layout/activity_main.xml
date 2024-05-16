@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingTop="20dp">
+
+        <Button
+            android:id="@+id/all_sensors_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Available sensors"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Motion sensors:"
+            android:padding="15dp"/>
+
+        <Button
+            android:id="@+id/gravity_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gravity"/>
+
+        <Button
+            android:id="@+id/accelerometer_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Accelerometer"/>
+
+        <Button
+            android:id="@+id/linear_acceleration_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Linear acceleration"/>
+
+        <Button
+            android:id="@+id/gyroscope_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gyroscope"/>
+
+        <Button
+            android:id="@+id/rotation_vector_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rotation vector"/>
+
+        <Button
+            android:id="@+id/significant_motion_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Significant motion"/>
+
+        <Button
+            android:id="@+id/step_counter_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Step counter"/>
+
+        <Button
+            android:id="@+id/step_detector_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Step detector"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Position sensors:"
+            android:padding="15dp"/>
+
+        <Button
+            android:id="@+id/magnetic_field_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Magnetic field"/>
+
+        <Button
+            android:id="@+id/orientation_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Orientation"/>
+
+        <Button
+            android:id="@+id/proximity_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Proximity"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Environment sensors:"
+            android:padding="15dp"/>
+
+        <Button
+            android:id="@+id/light_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Light"/>
+
+        <Button
+            android:id="@+id/temperature_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Temperature"/>
+
+        <Button
+            android:id="@+id/pressure_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pressure"/>
+
+        <Button
+            android:id="@+id/humidity_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Relative humidity"/>
+
+    </LinearLayout>
+</ScrollView>
