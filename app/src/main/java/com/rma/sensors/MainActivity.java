@@ -1,8 +1,6 @@
 package com.rma.sensors;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -17,13 +15,18 @@ import android.widget.Button;
 import com.rma.sensors.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
-    private ActivityMainBinding viewBinding;
+
+    // disable buttons if sensor doesn't exist
+    // force portrait
+    // smart low pass filtering?
+    // izračun prave frekvencije
+    // drop down izbornik možda
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        viewBinding = ActivityMainBinding.inflate(getLayoutInflater());
+        ActivityMainBinding viewBinding = ActivityMainBinding.inflate(getLayoutInflater());
 
         EdgeToEdge.enable(this);
         setContentView(viewBinding.getRoot());
@@ -33,38 +36,29 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        SharedPreferences sharedPreferences = getSharedPreferences("MeasurementUnits", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(String.valueOf(Sensor.TYPE_ACCELEROMETER), "m/s²");
-        editor.apply();
-
-        openSensorActivityWhenButtonIsPressed(viewBinding.allSensorsButton, Sensor.TYPE_ALL);
-        // izdvoji u uzasebni activity
-        openSensorActivityWhenButtonIsPressed(viewBinding.gravityButton, Sensor.TYPE_GRAVITY);
-        openSensorActivityWhenButtonIsPressed(viewBinding.accelerometerButton, Sensor.TYPE_ACCELEROMETER);
-        openSensorActivityWhenButtonIsPressed(viewBinding.linearAccelerationButton, Sensor.TYPE_LINEAR_ACCELERATION);
-        openSensorActivityWhenButtonIsPressed(viewBinding.gyroscopeButton, Sensor.TYPE_GYROSCOPE);
-        openSensorActivityWhenButtonIsPressed(viewBinding.rotationVectorButton, Sensor.TYPE_ROTATION_VECTOR);
-        openSensorActivityWhenButtonIsPressed(viewBinding.significantMotionButton, Sensor.TYPE_SIGNIFICANT_MOTION);
-        openSensorActivityWhenButtonIsPressed(viewBinding.stepCounterButton, Sensor.TYPE_STEP_COUNTER);
-        openSensorActivityWhenButtonIsPressed(viewBinding.stepDetectorButton, Sensor.TYPE_STEP_DETECTOR);
-        openSensorActivityWhenButtonIsPressed(viewBinding.magneticFieldButton, Sensor.TYPE_MAGNETIC_FIELD);
-        openSensorActivityWhenButtonIsPressed(viewBinding.orientationButton, Sensor.TYPE_ORIENTATION);
-        openSensorActivityWhenButtonIsPressed(viewBinding.proximityButton, Sensor.TYPE_PROXIMITY);
-        openSensorActivityWhenButtonIsPressed(viewBinding.lightButton, Sensor.TYPE_LIGHT);
-        openSensorActivityWhenButtonIsPressed(viewBinding.temperatureButton, Sensor.TYPE_AMBIENT_TEMPERATURE);
-        openSensorActivityWhenButtonIsPressed(viewBinding.pressureButton, Sensor.TYPE_PRESSURE);
-        openSensorActivityWhenButtonIsPressed(viewBinding.humidityButton, Sensor.TYPE_RELATIVE_HUMIDITY);
+        viewBinding.allSensorsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(this, DisplayAllSensorsActivity.class);
+            startActivity(intent);
+        });
+        
+        openSensorActivity(viewBinding.gravityButton, Sensor.TYPE_GRAVITY);
+        openSensorActivity(viewBinding.accelerometerButton, Sensor.TYPE_ACCELEROMETER);
+        openSensorActivity(viewBinding.linearAccelerationButton, Sensor.TYPE_LINEAR_ACCELERATION);
+        openSensorActivity(viewBinding.gyroscopeButton, Sensor.TYPE_GYROSCOPE);
+        openSensorActivity(viewBinding.rotationVectorButton, Sensor.TYPE_ROTATION_VECTOR);
+        openSensorActivity(viewBinding.significantMotionButton, Sensor.TYPE_SIGNIFICANT_MOTION);
+        openSensorActivity(viewBinding.stepCounterButton, Sensor.TYPE_STEP_COUNTER);
+        openSensorActivity(viewBinding.stepDetectorButton, Sensor.TYPE_STEP_DETECTOR);
+        openSensorActivity(viewBinding.magneticFieldButton, Sensor.TYPE_MAGNETIC_FIELD);
+        openSensorActivity(viewBinding.orientationButton, Sensor.TYPE_ORIENTATION);
+        openSensorActivity(viewBinding.proximityButton, Sensor.TYPE_PROXIMITY);
+        openSensorActivity(viewBinding.lightButton, Sensor.TYPE_LIGHT);
+        openSensorActivity(viewBinding.temperatureButton, Sensor.TYPE_AMBIENT_TEMPERATURE);
+        openSensorActivity(viewBinding.pressureButton, Sensor.TYPE_PRESSURE);
+        openSensorActivity(viewBinding.humidityButton, Sensor.TYPE_RELATIVE_HUMIDITY);
     }
 
-
-    // disable buttons if sensor doesn't exist
-    // force portrait
-    // smart low pass filtering?
-    // izračun prave frekvencije
-    // drop down izbornik možda
-
-    private void openSensorActivityWhenButtonIsPressed(Button button, int sensorType) {
+    private void openSensorActivity(Button button, int sensorType) {
         if(button == null) return;
 
         button.setOnClickListener(v -> {

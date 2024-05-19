@@ -1,32 +1,33 @@
 package com.rma.sensors;
 
-import android.graphics.Color;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.LegendRenderer;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
-import android.os.Handler;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class GraphFragment extends Fragment {
-    private static final int[] COLORS = {Color.RED, Color.BLUE, Color.YELLOW, Color.MAGENTA, Color.CYAN, Color.GREEN};
-    private static final String[] TITLES = {"x", "y", "z", "k", "i", "j"};
+    public static final String MAX_RANGE_KEY = "max_range";
+    public static final String MIN_RANGE_KEY = "min_range";
     private final Handler mHandler = new Handler();
+    private final List<LineGraphSeries<DataPoint>> seriesList = new ArrayList<>();
     private Runnable mTimer;
     private GraphView graph;
-    private List<LineGraphSeries<DataPoint>> seriesList = new ArrayList<>();
     private double graphLastXValue = 0d;
+    private float maxRange, minRange;
+    private boolean areBoundsManual = false;
+    private boolean graphInitialized = false;
     private float[] currentSensorReadings = new float[0];
 
     @Override
@@ -34,24 +35,38 @@ public class GraphFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_graph, container, false);
+        graph = rootView.findViewById(R.id.graph);
+
+        if (getArguments() != null) {
+            maxRange = getArguments().getFloat(MAX_RANGE_KEY);
+            minRange = getArguments().getFloat(MIN_RANGE_KEY);
+            areBoundsManual = true;
+        }
 
         SensorViewModel sensorViewModel = new ViewModelProvider(requireActivity()).get(SensorViewModel.class);
         sensorViewModel.getData().observe(getViewLifecycleOwner(), newData -> {
             currentSensorReadings = newData;
+            if (!graphInitialized)
+                initGraph();
         });
 
-        graph = (GraphView) rootView.findViewById(R.id.graph);
+        return rootView;
+    }
 
+    private void initGraph() {
         for (int i = 0; i < currentSensorReadings.length; i++) {
             seriesList.add(new LineGraphSeries<>());
-            seriesList.get(i).setColor(COLORS[i % COLORS.length]);
-            seriesList.get(i).setTitle(TITLES[i % TITLES.length]);
+            seriesList.get(i).setColor(GlobalConstants.getColor(i));
+            seriesList.get(i).setTitle(GlobalConstants.getTitle(i));
             graph.addSeries(seriesList.get(i));
         }
 
-        graph.getViewport().setYAxisBoundsManual(true);
-        graph.getViewport().setMinY(-10);
-        graph.getViewport().setMaxY(10);
+        if (areBoundsManual) {
+            graph.getViewport().setYAxisBoundsManual(true);
+            graph.getViewport().setMaxY(maxRange);
+            graph.getViewport().setMinY(minRange);
+        }
+
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
         graph.getViewport().setMaxX(100);
@@ -59,10 +74,14 @@ public class GraphFragment extends Fragment {
         graph.getGridLabelRenderer().setHorizontalLabelsVisible(false);
         graph.getGridLabelRenderer().setPadding(50);
 
-        graph.getLegendRenderer().setVisible(true);
-        graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.BOTTOM);
+        if (currentSensorReadings.length > 1) {
+            graph.getLegendRenderer().setVisible(true);
+            //graph.getLegendRenderer().setFixedPosition(20, 300);
+            graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
+            graph.getLegendRenderer().setTextSize(50);
+        }
 
-        return rootView;
+        graphInitialized = true;
     }
 
     @Override
@@ -75,10 +94,11 @@ public class GraphFragment extends Fragment {
                 graphLastXValue += 1d;
 
                 for (int i = 0; i < seriesList.size(); i++) {
-                    seriesList.get(i).appendData(new DataPoint(graphLastXValue, currentSensorReadings[i]), true, 100);
+                    seriesList.get(i).appendData(new DataPoint(graphLastXValue, currentSensorReadings[i]),
+                                                    true, 100);
                 }
 
-                if(graphLastXValue > 1000) {
+                if (graphLastXValue > 1000) {
                     graphLastXValue = 0d;
                     graph.removeAllSeries();
 
@@ -88,6 +108,7 @@ public class GraphFragment extends Fragment {
                         graph.addSeries(seriesList.get(i));
                     }
                 }
+
                 mHandler.postDelayed(this, 100);
             }
         };
