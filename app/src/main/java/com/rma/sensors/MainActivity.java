@@ -16,11 +16,8 @@ import com.rma.sensors.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
 
-    // disable buttons if sensor doesn't exist
     // force portrait
-    // smart low pass filtering?
     // izračun prave frekvencije
-    // drop down izbornik možda
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,12 +43,11 @@ public class MainActivity extends AppCompatActivity {
         openSensorActivity(viewBinding.linearAccelerationButton, Sensor.TYPE_LINEAR_ACCELERATION);
         openSensorActivity(viewBinding.gyroscopeButton, Sensor.TYPE_GYROSCOPE);
         openSensorActivity(viewBinding.rotationVectorButton, Sensor.TYPE_ROTATION_VECTOR);
-        openSensorActivity(viewBinding.significantMotionButton, Sensor.TYPE_SIGNIFICANT_MOTION);
-        openSensorActivity(viewBinding.stepCounterButton, Sensor.TYPE_STEP_COUNTER);
-        openSensorActivity(viewBinding.stepDetectorButton, Sensor.TYPE_STEP_DETECTOR);
+
         openSensorActivity(viewBinding.magneticFieldButton, Sensor.TYPE_MAGNETIC_FIELD);
         openSensorActivity(viewBinding.orientationButton, Sensor.TYPE_ORIENTATION);
         openSensorActivity(viewBinding.proximityButton, Sensor.TYPE_PROXIMITY);
+
         openSensorActivity(viewBinding.lightButton, Sensor.TYPE_LIGHT);
         openSensorActivity(viewBinding.temperatureButton, Sensor.TYPE_AMBIENT_TEMPERATURE);
         openSensorActivity(viewBinding.pressureButton, Sensor.TYPE_PRESSURE);

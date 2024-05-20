@@ -42,6 +42,12 @@ public class DisplayAllSensorsActivity extends AppCompatActivity {
         StringBuilder sensorsText = new StringBuilder();
         for (Sensor sensor : sensorsList) {
             sensorsText.append(sensor.toString());
+
+            if(!sensor.getStringType().isEmpty()) {
+                sensorsText.append("\n");
+                sensorsText.append("Type: ");
+                sensorsText.append(sensor.getStringType());
+            }
             sensorsText.append("\n\n");
         }
         viewBinding.allSensorsPreview.setText(sensorsText);

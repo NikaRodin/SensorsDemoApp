@@ -10,43 +10,70 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
         android:layout_gravity="center"
+        android:gravity="center"
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/sensor_name"
+            android:id="@+id/sensor_not_available"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sensor name"
-            android:padding="10dp"/>
+            android:text="Sensor is not available on this device."
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:visibility="gone"/>
 
-        <TextView
-            android:id="@+id/sensor_info"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/sensor_available"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Sensor info"
-            android:padding="10dp"/>
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="visible">
 
-        <TextView
-            android:id="@+id/sensor_readings"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sensor readings"
-            android:padding="10dp"/>
+            <TextView
+                android:id="@+id/sensor_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sensor name"
+                android:padding="10dp"/>
 
-        <TextView
-            android:id="@+id/sensor_accuracy"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sensor accuracy"
-            android:padding="10dp"/>
+            <TextView
+                android:id="@+id/sensor_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sensor info"
+                android:padding="10dp"/>
 
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/fragment_container"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-        </androidx.fragment.app.FragmentContainerView>
+            <TextView
+                android:id="@+id/sensor_readings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sensor readings"
+                android:padding="10dp"/>
 
+            <TextView
+                android:id="@+id/sensor_frequency"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Measuring frequency..."
+                android:padding="10dp"/>
+
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/fragment_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+            </androidx.fragment.app.FragmentContainerView>
+
+            <TextView
+                android:id="@+id/sensor_accuracy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Sensor accuracy"
+                android:padding="10dp"/>
+
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

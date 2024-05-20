@@ -8,10 +8,10 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -22,14 +22,19 @@ import com.rma.sensors.databinding.ActivitySensorBinding;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class SensorActivity extends AppCompatActivity implements SensorEventListener {
     private static final String TAG = "SensorActivity";
     public static final String SENSOR_TYPE_KEY = "Tip senzora";
     private static final int DEFAULT_TYPE = Sensor.TYPE_ACCELEROMETER;
-    private static final int SAMPLING_FREQUENCY = 5; //cilj: smanjiti ludiranje vrijednosti (prikaži svaki 5.)
-    private int counter = SAMPLING_FREQUENCY;
+    private static final int DISPLAY_FREQUENCY = 5;
+    private final int suggestedDelay = SensorManager.SENSOR_DELAY_NORMAL;
+    private int displayCounter = DISPLAY_FREQUENCY;
+    private int sampleCounter = 0;
+    private long lastTimestamp = 0;
+    private double totalInterval = 0;
     private ActivitySensorBinding viewBinding;
     private SensorViewModel sensorViewModel;
     private SensorManager sensorManager;
@@ -57,30 +62,35 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         if (intent != null) {
             sensorType = intent.getIntExtra(SENSOR_TYPE_KEY, DEFAULT_TYPE);
             sensor = sensorManager.getDefaultSensor(sensorType);
-            previewSensor(savedInstanceState);
+            displaySensorInfoDetails(savedInstanceState);
             displayGraph(savedInstanceState);
         } else {
-            Log.d(TAG, "No intent");
+            Log.d(TAG, "Missing intent");
             finish();
         }
     }
 
-    private void previewSensor(Bundle savedInstanceState) {
-        if (sensor == null){
-            Toast.makeText(this, "Senzor ne postoji na uređaju!", Toast.LENGTH_LONG).show();
-        } else if(savedInstanceState == null){
-            int numSensors = sensorManager.getSensorList(sensorType).size();
-            Toast.makeText(this, "Imamo " + numSensors + " senzor(a) tog tipa.", Toast.LENGTH_LONG).show();
-        }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        sensorManager.registerListener(this, sensor, suggestedDelay);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(this); //this -> SensorEventListener
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        counter++;
-        if(counter > SAMPLING_FREQUENCY || sensorType == Sensor.TYPE_PROXIMITY || sensorType == Sensor.TYPE_SIGNIFICANT_MOTION) {
-            displaySensorData(event); // provjeri ima li ovo smisla tj blokira li svejedno
-            counter = 0;
+        displayCounter++;
+        if(displayCounter > DISPLAY_FREQUENCY || sensorType == Sensor.TYPE_PROXIMITY) {
+            displaySensorData(event);
+            sensorViewModel.setData(event.values);
+            displayCounter = 0;
         }
+        calculateFrequency(event);
     }
 
     @Override
@@ -91,32 +101,30 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         String accuracyText = "Current accuracy: " + level[accuracy] + "\n(Last change: " + getCurrentTimeStamp() + ")";
         viewBinding.sensorAccuracy.setText(accuracyText);
     }
+    
+    private void displaySensorInfoDetails(Bundle savedInstanceState) {
+        if (sensor == null){
+            viewBinding.sensorNotAvailable.setVisibility(View.VISIBLE);
+            viewBinding.sensorAvailable.setVisibility(View.GONE);
+            
+        } else {
+            viewBinding.sensorNotAvailable.setVisibility(View.GONE);
+            viewBinding.sensorAvailable.setVisibility(View.VISIBLE);
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
-    }
+            viewBinding.sensorName.setText(sensor.getName());
+            viewBinding.sensorInfo.setText(getSensorInfo(sensor));
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        sensorManager.unregisterListener(this); //this -> SensorEventListener (implementiramo ga)
-    }
-
-    public static String getCurrentTimeStamp(){
-        try {
-            DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, Locale.getDefault());
-            return dateFormat.format(new Date());
-        } catch (Exception e) {
-            Log.e(TAG, "Timestamp error: " + e.getMessage());
-            return "?";
+            if (savedInstanceState == null) {
+                int numSensors = sensorManager.getSensorList(sensorType).size();
+                if (numSensors > 1) {
+                    String msg = "Found " + numSensors + " sensors of this type. Displaying default sensor.";
+                    Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+                }
+            }
         }
     }
 
-    private void displaySensorData(SensorEvent event) {
-        viewBinding.sensorName.setText(sensor.getName());
-
+    private static StringBuilder getSensorInfo(Sensor sensor) {
         StringBuilder sensorInfo = new StringBuilder();
         sensorInfo.append("Type: ").append(sensor.getStringType()).append("\n");
         sensorInfo.append("Vendor: ").append(sensor.getVendor()).append("\n");
@@ -126,20 +134,59 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         sensorInfo.append("Resolution: ").append(sensor.getResolution()).append("\n");
         sensorInfo.append("Max delay: ").append(sensor.getMaxDelay()).append("\n");
         sensorInfo.append("Min delay: ").append(sensor.getMinDelay()).append("\n");
+        return sensorInfo;
+    }
 
-        viewBinding.sensorInfo.setText(sensorInfo);
-
+    private void displaySensorData(SensorEvent event) {
         StringBuilder sensorReadings = new StringBuilder();
         for (int i = 0; i < event.values.length; i++) {
             if(event.values.length > 1)
                 sensorReadings.append(GlobalConstants.getTitle(i)).append(": ");
-
             sensorReadings.append(String.format(Locale.getDefault(),"%.5f", event.values[i])).append(" ");
             sensorReadings.append(GlobalConstants.getMeasurementUnit(sensorType)).append("\n");
         }
         viewBinding.sensorReadings.setText(sensorReadings);
+    }
 
-        sensorViewModel.setData(event.values);
+    private void calculateFrequency(SensorEvent event){
+        long currentTimestamp = event.timestamp;
+        double suggestedFrequency = GlobalConstants.getFrequency(suggestedDelay);
+
+        if (lastTimestamp != 0) {
+            long interval = currentTimestamp - lastTimestamp;
+            totalInterval += interval;
+            sampleCounter++;
+        }
+        lastTimestamp = currentTimestamp;
+
+        if (sampleCounter >= 100) {
+            double averageInterval = totalInterval/sampleCounter;
+            double actualFrequency = 1e9/averageInterval;
+
+            if(suggestedFrequency != -1)
+                viewBinding.sensorFrequency.setText(
+                    String.format(Locale.getDefault(),"Suggested frequency: %.2f Hz\n", suggestedFrequency));
+            else
+                viewBinding.sensorFrequency.setText("Suggested frequency: max\n");
+
+            viewBinding.sensorFrequency.append(
+                    String.format(Locale.getDefault(),"Actual frequency: %.2f Hz", actualFrequency));
+
+            sampleCounter = 0;
+            totalInterval = 0;
+        }
+    }
+
+    public static String getCurrentTimeStamp(){
+        try {
+            DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT,
+                                                                    DateFormat.DEFAULT,
+                                                                    Locale.getDefault());
+            return dateFormat.format(new Date());
+        } catch (Exception e) {
+            Log.e(TAG, "Timestamp error: " + e.getMessage());
+            return "?";
+        }
     }
 
     private void displayGraph(Bundle savedInstanceState) {
@@ -149,17 +196,30 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
                     .add(viewBinding.fragmentContainer.getId(), GraphFragment.class, getSensorRangeArgs())
                     .commit();
         }
+
+
+        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+
+        List<Sensor> deviceSensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
+        Sensor magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        sensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.unregisterListener(this);
+
+
+
+
     }
 
     private Bundle getSensorRangeArgs() {
-        Bundle args = new Bundle();
-        float maxRange, minRange;
+        Bundle args = null;
 
         if(sensor != null) {
+            args = new Bundle();
+            float maxRange, minRange;
 
             switch(sensorType) {
                 case(Sensor.TYPE_LIGHT):
-                    maxRange = sensor.getMaximumRange()/2;
+                    maxRange = 30000;
                     minRange = 0;
                     break;
 

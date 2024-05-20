@@ -31,9 +31,7 @@ public class GraphFragment extends Fragment {
     private float[] currentSensorReadings = new float[0];
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_graph, container, false);
         graph = rootView.findViewById(R.id.graph);
 
@@ -76,9 +74,7 @@ public class GraphFragment extends Fragment {
 
         if (currentSensorReadings.length > 1) {
             graph.getLegendRenderer().setVisible(true);
-            //graph.getLegendRenderer().setFixedPosition(20, 300);
-            graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
-            graph.getLegendRenderer().setTextSize(50);
+            graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.BOTTOM);
         }
 
         graphInitialized = true;
@@ -98,7 +94,7 @@ public class GraphFragment extends Fragment {
                                                     true, 100);
                 }
 
-                if (graphLastXValue > 1000) {
+                if (graphLastXValue > 10000) {
                     graphLastXValue = 0d;
                     graph.removeAllSeries();
 
